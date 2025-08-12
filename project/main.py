@@ -81,7 +81,11 @@ def sync():
             vevent = event.vobject_instance.vevent
 
             vevent.summary.value = outlook_event.title
-            vevent.description.value = outlook_event.description
+            try:
+                vevent.description.value = outlook_event.description
+            except AttributeError as e:
+                logger.error(f'Ошибка обновления описания: {e}')
+
             vevent.dtstart.value = outlook_event.start.astimezone(tz)
             vevent.dtend.value = outlook_event.end.astimezone(tz)
 
