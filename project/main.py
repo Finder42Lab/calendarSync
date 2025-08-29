@@ -83,9 +83,12 @@ def sync():
             vevent = event.vobject_instance.vevent
 
             vevent.summary.value = outlook_event.title
-            vevent.location.value = outlook_event.location
+            vevent.add('location').value = outlook_event.location
             try:
-                vevent.description.value = outlook_event.description
+                if hasattr(vevent, 'description'):
+                    vevent.description.value = outlook_event.description
+                else:
+                    vevent.add('description').value = outlook_event.description
             except AttributeError as e:
                 logger.error(f'Ошибка обновления описания: {e}')
 
