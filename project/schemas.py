@@ -43,6 +43,7 @@ class CalDavEvent(BaseModel):
         default="",
     )
     summary: str = Field(validation_alias=AliasPath("summary", "value"), default="")
+    location: str = Field(validation_alias=AliasPath("location", "value"), default="")
 
     start: datetime.datetime = Field(
         validation_alias=AliasPath("dtstart", "value"),
