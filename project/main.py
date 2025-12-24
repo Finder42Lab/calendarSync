@@ -51,7 +51,7 @@ def sync():
     tz = pytz.timezone(config.TZ)
 
     for outlook_event in outlook_calendar.get_events():
-        if outlook_event.id not in caldav_events_map:
+        if outlook_event.id not in caldav_events_map and not outlook_event.is_cancelled:
             logger.info(
                 f"Создаю новое событие ({outlook_event.start}-{outlook_event.end})"
                 f"{outlook_event.title} - {outlook_event.description}",
@@ -65,7 +65,15 @@ def sync():
             )
             continue
 
-        caldav_event = caldav_events_map[outlook_event.id]
+        caldav_event = caldav_events_map.get(outlook_event.id)
+
+        if outlook_event.is_cancelled and caldav_event:
+            logger.info(f'Удаляю отмененное событие {outlook_event.title}')
+            caldav_event._instance.delete()
+            continue
+
+        if not caldav_event:
+            continue
 
         if (
             (outlook_event.title != caldav_event.summary
