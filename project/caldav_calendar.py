@@ -50,6 +50,7 @@ class CalDavCalendar:
         uid: str,
         summary: str,
         description: str,
+            location: str,
         start: datetime.datetime,
         end: datetime.datetime,
     ):
@@ -61,6 +62,7 @@ class CalDavCalendar:
         vevent.add('dtstart').value = start
         vevent.add('dtend').value = end
         vevent.add('description').value = description
+        vevent.add('location').value = location
 
         ics_data = vcal.serialize()
 

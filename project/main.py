@@ -60,6 +60,7 @@ def sync():
                 uid=outlook_event.id,
                 summary=outlook_event.title,
                 description=outlook_event.description,
+                location=outlook_event.location,
                 start=outlook_event.start.astimezone(tz),
                 end=outlook_event.end.astimezone(tz),
             )
@@ -78,7 +79,8 @@ def sync():
         if (
             (outlook_event.title != caldav_event.summary
             or outlook_event.start != caldav_event.start
-            or outlook_event.end != caldav_event.end)
+            or outlook_event.end != caldav_event.end
+            or outlook_event.location != caldav_event.location)
             and caldav_event._instance is not None
         ):
             logger.info(
@@ -89,8 +91,12 @@ def sync():
             vevent = event.vobject_instance.vevent
 
             vevent.summary.value = outlook_event.title
+            vevent.add('location').value = outlook_event.location
             try:
-                vevent.description.value = outlook_event.description
+                if hasattr(vevent, 'description'):
+                    vevent.description.value = outlook_event.description
+                else:
+                    vevent.add('description').value = outlook_event.description
             except AttributeError as e:
                 logger.error(f'Ошибка обновления описания: {e}')
 
