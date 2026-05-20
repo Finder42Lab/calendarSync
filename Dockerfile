@@ -17,6 +17,8 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /usr/share/ma
 WORKDIR /app
 
 COPY ./project/. .
+COPY ./pyproject.toml .
+COPY ./uv.lock .
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 RUN uv sync --locked
