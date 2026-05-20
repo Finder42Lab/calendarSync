@@ -33,6 +33,7 @@ def sync():
         host=config.OUTLOOK_HOST,
         login=config.OUTLOOK_LOGIN,
         password=config.OUTLOOK_PASSWORD,
+        ssl_verify=config.OUTLOOK_SSL_VERIFY,
     )
 
     outlook_client = outlook_login.get_client()

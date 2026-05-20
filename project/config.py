@@ -5,6 +5,7 @@ class Config(BaseSettings):
     OUTLOOK_HOST: str
     OUTLOOK_LOGIN: str
     OUTLOOK_PASSWORD: str
+    OUTLOOK_SSL_VERIFY: bool = False
 
     CALDAV_HOST: str
     CALDAV_LOGIN: str

@@ -4,13 +4,21 @@ from httpx import Client
 
 
 class OutlookLogin:
-    def __init__(self, host: str, login: str, password: str):
+    def __init__(
+        self,
+        host: str,
+        login: str,
+        password: str,
+        ssl_verify: bool = True,
+    ):
         self.host = host
         self.login = login
         self.password = password
+        self.ssl_verify = ssl_verify
 
         self.client = Client(
             base_url=self.host,
+            verify=self.ssl_verify,
             headers={
                 "accept-encoding": "gzip, deflate, br, zstd",
                 "accept-language": "ru,en;q=0.9",
