@@ -19,6 +19,6 @@ WORKDIR /app
 COPY ./project/. .
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-RUN uv sync
+RUN uv sync --locked
 
 CMD ["uv", "run", "plug.py"]
