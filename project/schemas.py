@@ -54,12 +54,13 @@ class CalDavEvent(BaseModel):
         default="",
     )
 
-    created: datetime.datetime = Field(
+    created: datetime.datetime | None = Field(
         validation_alias=AliasPath("created", "value"),
-        default="",
+        default=None,
     )
-    modified: datetime.datetime = Field(
+    modified: datetime.datetime | None = Field(
         validation_alias=AliasPath("last-modified", "value"),
+        default=None,
     )
 
     _instance: Event | None = PrivateAttr()

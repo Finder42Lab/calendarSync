@@ -1,7 +1,9 @@
 import datetime
+from urllib.parse import urlsplit, urlunsplit
 
 import caldav
 import vobject
+from requests.auth import HTTPBasicAuth
 
 from schemas import CalDavEvent
 
@@ -10,7 +12,10 @@ class CalDavCalendar:
     def __init__(
         self, host: str, login: str, password: str, calendar_id: str | None = None
     ):
-        self.client = caldav.DAVClient(url=host, username=login, password=password)
+        self.client = caldav.DAVClient(
+            url=self._discovery_url(host),
+            auth=HTTPBasicAuth(login, password),
+        )
         self.principal = self.client.principal()
 
         calendars = self.principal.calendars()
@@ -26,6 +31,16 @@ class CalDavCalendar:
                 raise ValueError(f"No calendar found with id {calendar_id}")
 
             self.calendar = filtered_calendars[0]
+
+    @staticmethod
+    def _discovery_url(host: str) -> str:
+        parsed = urlsplit(host)
+        if parsed.path not in ("", "/"):
+            return host
+
+        return urlunsplit(
+            (parsed.scheme, parsed.netloc, "/dav/cal", parsed.query, "")
+        )
 
     def events(self) -> list[CalDavEvent]:
         events = []
