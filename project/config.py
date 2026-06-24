@@ -12,6 +12,9 @@ class Config(BaseSettings):
     CALDAV_PASSWORD: str
 
     CALDAV_CALENDAR_ID: str
+    
+    NOTIFICATION_URL: str
+    NOTIFICATION_TOKEN: str
 
     TZ: str
 
