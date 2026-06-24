@@ -1,6 +1,7 @@
 import sys
 
 import datetime
+import logging
 from loguru import logger
 
 from caldav_api import CalDavCalendar, CalDavEvent
@@ -52,6 +53,8 @@ def get_hourly_events(calendar: CalDavCalendar):
 def get_now_events(calendar: CalDavCalendar):
     period_start = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=2)
     period_end = period_start + datetime.timedelta(minutes=1)
+
+    logging.info(f'{period_start} - {period_end}')
 
     events = calendar.events(period_start, period_end)
 
