@@ -6,7 +6,7 @@ class NotificationClient:
         self.host = host
         self.token = token
 
-        self._client = Client(base_url=self.host, headers={"Authorization": {token}})
+        self._client = Client(base_url=self.host, headers={"Authorization": token})
 
     def send_notification(self, text: str):
         self._client.post(
