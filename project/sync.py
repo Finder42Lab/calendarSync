@@ -1,33 +1,26 @@
 import sys
 
+import datetime
 import pytz
 from caldav.objects import Event
 from loguru import logger
 
-from caldav_calendar import CalDavCalendar
+from caldav_api import CalDavCalendar
 from config import config
-from outlook_calendar import OutlookCalendar
-from outlook_login import OutlookLogin
+from outlook import OutlookCalendar, OutlookLogin
 
 
 logger.remove()
 logger.add(
-    "log.log",
-    format="{time:DD-MM-YYYY HH:mm:ss} | {level} | {message}",
-    colorize=False,
-    rotation="2 day",
-)
-logger.add(
     sys.stdout,
-    format="{time:DD-MM-YYYY HH:mm:ss} | {level} | {message}",
+    format="[SYNC] {time:DD-MM-YYYY HH:mm:ss} | {level} | {message}",
     colorize=True,
 )
 
 
-
 @logger.catch
 def sync():
-    logger.info('Я проснулся')
+    logger.info("Я проснулся")
 
     outlook_login = OutlookLogin(
         host=config.OUTLOOK_HOST,
@@ -47,7 +40,15 @@ def sync():
         calendar_id=config.CALDAV_CALENDAR_ID,
     )
 
-    caldav_events_map = {e.uid: e for e in calendar.events()}
+    period_start = datetime.datetime.now().replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    period_end = period_start + datetime.timedelta(days=14)
+
+    caldav_events_map = {e.uid: e for e in calendar.events(period_start, period_end)}
 
     tz = pytz.timezone(config.TZ)
 
@@ -70,7 +71,7 @@ def sync():
         caldav_event = caldav_events_map.get(outlook_event.id)
 
         if outlook_event.is_cancelled and caldav_event:
-            logger.info(f'Удаляю отмененное событие {outlook_event.title}')
+            logger.info(f"Удаляю отмененное событие {outlook_event.title}")
             caldav_event._instance.delete()
             continue
 
@@ -78,12 +79,11 @@ def sync():
             continue
 
         if (
-            (outlook_event.title != caldav_event.summary
+            outlook_event.title != caldav_event.summary
             or outlook_event.start != caldav_event.start
             or outlook_event.end != caldav_event.end
-            or outlook_event.location != caldav_event.location)
-            and caldav_event._instance is not None
-        ):
+            or outlook_event.location != caldav_event.location
+        ) and caldav_event._instance is not None:
             logger.info(
                 f"Обновляю событие ({outlook_event.start}-{outlook_event.end})"
                 f"{outlook_event.title} - {outlook_event.description}",
@@ -92,14 +92,14 @@ def sync():
             vevent = event.vobject_instance.vevent
 
             vevent.summary.value = outlook_event.title
-            vevent.add('location').value = outlook_event.location
+            vevent.add("location").value = outlook_event.location
             try:
-                if hasattr(vevent, 'description'):
+                if hasattr(vevent, "description"):
                     vevent.description.value = outlook_event.description
                 else:
-                    vevent.add('description').value = outlook_event.description
+                    vevent.add("description").value = outlook_event.description
             except AttributeError as e:
-                logger.error(f'Ошибка обновления описания: {e}')
+                logger.error(f"Ошибка обновления описания: {e}")
 
             vevent.dtstart.value = outlook_event.start.astimezone(tz)
             vevent.dtend.value = outlook_event.end.astimezone(tz)

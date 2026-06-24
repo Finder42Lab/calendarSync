@@ -5,7 +5,7 @@ import caldav
 import vobject
 from requests.auth import HTTPBasicAuth
 
-from schemas import CalDavEvent
+from caldav_api.schemas import CalDavEvent
 
 
 class CalDavCalendar:
@@ -38,46 +38,48 @@ class CalDavCalendar:
         if parsed.path not in ("", "/"):
             return host
 
-        return urlunsplit(
-            (parsed.scheme, parsed.netloc, "/dav/cal", parsed.query, "")
-        )
+        return urlunsplit((parsed.scheme, parsed.netloc, "/dav/cal", parsed.query, ""))
 
-    def events(self) -> list[CalDavEvent]:
+    def events(
+        self,
+        period_start: datetime.datetime,
+        period_end: datetime.datetime,
+    ) -> list[CalDavEvent]:
         events = []
 
-        for e in self._raw_events():
+        for e in self._raw_events(period_start, period_end):
             event = CalDavEvent.model_validate(e.vobject_instance.vevent)
             event._instance = e
             events.append(event)
 
         return events
 
-    def _raw_events(self):
-        range_start = datetime.datetime.now().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        range_end = range_start + datetime.timedelta(days=14)
+    def _raw_events(
+        self,
+        period_start: datetime.datetime,
+        period_end: datetime.datetime,
+    ):
 
-        return self.calendar.date_search(start=range_start, end=range_end)
+        return self.calendar.date_search(start=period_start, end=period_end)
 
     def create_event(
         self,
         uid: str,
         summary: str,
         description: str,
-            location: str,
+        location: str,
         start: datetime.datetime,
         end: datetime.datetime,
     ):
         vcal = vobject.iCalendar()
-        vevent = vcal.add('vevent')
+        vevent = vcal.add("vevent")
 
-        vevent.add('uid').value = uid
-        vevent.add('summary').value = summary
-        vevent.add('dtstart').value = start
-        vevent.add('dtend').value = end
-        vevent.add('description').value = description
-        vevent.add('location').value = location
+        vevent.add("uid").value = uid
+        vevent.add("summary").value = summary
+        vevent.add("dtstart").value = start
+        vevent.add("dtend").value = end
+        vevent.add("description").value = description
+        vevent.add("location").value = location
 
         ics_data = vcal.serialize()
 

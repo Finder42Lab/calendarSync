@@ -5,7 +5,7 @@ import urllib.parse
 
 from httpx import Client
 
-from schemas import OutlookCalendarEvent
+from outlook.schemas import OutlookCalendarEvent
 
 
 def get_calendar_view_post_data():
