@@ -86,3 +86,7 @@ def notify():
 
     if events:
         notificator.send_notification(format_events(events, '🔔 Конференции через час'))
+
+
+if __name__ == '__main__':
+    notify()
