@@ -71,18 +71,18 @@ def notify():
         token=config.NOTIFICATION_TOKEN,
     )
 
-    logger.add('Получаю события, которые будут сейчас')
+    logger.info('Получаю события, которые будут сейчас')
 
     now_events = get_now_events(calendar)
-    logger.add(f'Событий: {len(now_events)}')
+    logger.info(f'Событий: {len(now_events)}')
 
     if now_events:
         notificator.send_notification(format_events(now_events, '🚨 Конференции уже сейчас:'))
 
-    logger.add('Получаю события, которые будут через час')
+    logger.info('Получаю события, которые будут через час')
     events = get_hourly_events(calendar)
 
-    logger.add(f'Событий: {len(events)}')
+    logger.info(f'Событий: {len(events)}')
 
     if events:
         notificator.send_notification(format_events(events, '🔔 Конференции через час'))
