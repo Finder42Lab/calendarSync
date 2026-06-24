@@ -41,7 +41,7 @@ def format_events(events: list[CalDavEvent], header: str):
 
 
 def get_hourly_events(calendar: CalDavCalendar):
-    period_start = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) + datetime.timedelta(hours=1)
+    period_start = datetime.datetime.now().replace(second=0, microsecond=0) + datetime.timedelta(hours=1)
     period_end = period_start + datetime.timedelta(minutes=1)
 
     events = calendar.events(period_start, period_end)
@@ -50,7 +50,7 @@ def get_hourly_events(calendar: CalDavCalendar):
 
 
 def get_now_events(calendar: CalDavCalendar):
-    period_start = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=2)
+    period_start = datetime.datetime.now().replace(second=0, microsecond=0) + datetime.timedelta(minutes=2)
     period_end = period_start + datetime.timedelta(minutes=1)
 
     logger.info(f'{period_start} - {period_end}')
