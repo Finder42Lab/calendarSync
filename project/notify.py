@@ -30,6 +30,14 @@ def format_event(event: CalDavEvent):
     return txt
 
 
+def get_today_events(calendar: CalDavCalendar):
+    period_start = datetime.datetime.today().replace(second=0, microsecond=0, minute=0, hour=0)
+    period_end = period_start + datetime.timedelta(days=1)
+
+    return calendar.events(period_start, period_end)
+
+
+
 def format_events(events: list[CalDavEvent], header: str):
     txt = f'**{header}** \n'
 
@@ -40,24 +48,16 @@ def format_events(events: list[CalDavEvent], header: str):
     return txt
 
 
-def get_hourly_events(calendar: CalDavCalendar):
-    period_start = datetime.datetime.now().replace(second=0, microsecond=0) + datetime.timedelta(hours=1)
-    period_end = period_start + datetime.timedelta(minutes=1)
+def get_hourly_events(events: list[CalDavEvent]):
+    max_dt = datetime.datetime.now().replace(second=0, microsecond=0) + datetime.timedelta(hours=1)
 
-    events = calendar.events(period_start, period_end)
-
-    return events
+    return [e for e in events if e.start == max_dt]
 
 
-def get_now_events(calendar: CalDavCalendar):
-    period_start = datetime.datetime.now().replace(second=0, microsecond=0) + datetime.timedelta(minutes=2)
-    period_end = period_start + datetime.timedelta(minutes=1)
+def get_now_events(events: list[CalDavEvent]):
+    max_dt = datetime.datetime.now().replace(second=0, microsecond=0) + datetime.timedelta(minutes=3)
 
-    logger.info(f'{period_start} - {period_end}')
-
-    events = calendar.events(period_start, period_end)
-
-    return events
+    return [e for e in events if e.start == max_dt]
 
 
 def notify():
@@ -72,21 +72,25 @@ def notify():
         host=config.NOTIFICATION_URL,
         token=config.NOTIFICATION_TOKEN,
     )
+    logger.info('Получаю события, которые на сегодня')
+    events = get_today_events(calendar)
+
+    logger.info(f'Событий: {len(events)}')
 
     logger.info('Получаю события, которые будут сейчас')
 
-    now_events = get_now_events(calendar)
+    now_events = get_now_events(events)
     logger.info(f'Событий: {len(now_events)}')
 
     if now_events:
         notificator.send_notification(format_events(now_events, '🚨 Конференции уже сейчас:'))
 
     logger.info('Получаю события, которые будут через час')
-    events = get_hourly_events(calendar)
+    hourly_events = get_hourly_events(events)
 
-    logger.info(f'Событий: {len(events)}')
+    logger.info(f'Событий: {len(hourly_events)}')
 
-    if events:
+    if hourly_events:
         notificator.send_notification(format_events(events, '🔔 Конференции через час'))
 
 
