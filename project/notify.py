@@ -1,9 +1,19 @@
+import sys
+
 import datetime
+from loguru import logger
 
 from caldav_api import CalDavCalendar, CalDavEvent
 from config import config
 from notification_client.notification import NotificationClient
 
+
+logger.remove()
+logger.add(
+    sys.stdout,
+    format="[NOTIFY] {time:DD-MM-YYYY HH:mm:ss} | {level} | {message}",
+    colorize=True,
+)
 
 def format_event(event: CalDavEvent):
     start_formatted = event.start.strftime('%H:%M')
@@ -40,7 +50,7 @@ def get_hourly_events(calendar: CalDavCalendar):
 
 
 def get_now_events(calendar: CalDavCalendar):
-    period_start = datetime.datetime.now().replace(minute=0, second=0, microsecond=0)
+    period_start = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=2)
     period_end = period_start + datetime.timedelta(minutes=1)
 
     events = calendar.events(period_start, period_end)
@@ -61,8 +71,18 @@ def notify():
         token=config.NOTIFICATION_TOKEN,
     )
 
-    now_events = get_now_events(calendar)
-    notificator.send_notification(format_events(now_events, '🚨 Конференции уже сейчас:'))
+    logger.add('Получаю события, которые будут сейчас')
 
+    now_events = get_now_events(calendar)
+    logger.add(f'Событий: {len(now_events)}')
+
+    if now_events:
+        notificator.send_notification(format_events(now_events, '🚨 Конференции уже сейчас:'))
+
+    logger.add('Получаю события, которые будут через час')
     events = get_hourly_events(calendar)
-    notificator.send_notification(format_events(events, '🔔 Конференции через час'))
+
+    logger.add(f'Событий: {len(events)}')
+
+    if events:
+        notificator.send_notification(format_events(events, '🔔 Конференции через час'))
